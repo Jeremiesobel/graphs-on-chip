@@ -8,10 +8,19 @@
 Navigate to the future project directory, and enter:
 
 `conda create -n grph python=3.8`
+
 `conda activate grph`
 
-3. Install the package
+3. Download the package
 
-`pip install -U git+https://github.com/microfluidix/graphs-on-chip`
+`git clone https://github.com/microfluidix/graphs-on-chip`
 
-This should download the project and download the relevant packages.
+This should download the project.
+
+4. Install the required packages
+
+In the terminal, navigate to the package directory and type:
+
+`pip install .`
+
+This should install all the relevant libraries.
