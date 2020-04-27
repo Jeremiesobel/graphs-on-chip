@@ -51,11 +51,11 @@ def single_spheroid_process(spheroid_frame:pandas.DataFrame,
     return spheroid
 
 
-def generate_artificial_spheroid(n:int):
+def generate_artificial_spheroid(n:int,
+                                ndims:int = 3):
 
+    data = np.random.rand(n,ndims)
     columns = ['x', 'y', 'z']
-
-    data = np.random.rand(n,3)
 
     Sf = pandas.DataFrame(data = data, columns = columns)
 
@@ -97,7 +97,7 @@ def batch_spheroid_process(spheroid_folder:str,
 
     
 
-    with open(os.path.join(save_folder, save_name + '.json', 'w') as fp:
+    with open(os.path.join(save_folder, save_name + '.json', 'w')) as fp:
         json.dump(spheroid, fp, sort_keys=True, indent=4)
 
     return
