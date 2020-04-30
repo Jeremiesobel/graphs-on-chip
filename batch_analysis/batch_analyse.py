@@ -29,31 +29,38 @@ def batch_analyse(spheroid_path:str,
 
     resultFrame = pandas.DataFrame()
 
-    for spheroid_name in tqdm(glob.glob(os.path.join(spheroid_path, '*.csv'))):
+    for spheroid_name in glob.glob(os.path.join(spheroid_path, '*.csv')):
 
-        prefix, _ = spheroid_name.split('.')
-        prefix, position, date = prefix.split('_')
+        try:
 
-        intensity_name = 'intensityFrame_' + position + '_' + date + '.csv'
+            spheroid_name = spheroid_name.split('/')[-1]
+            prefix, _ = spheroid_name.split('.')
+            prefix, position, date = prefix.split('_')
 
-        spheroid_file = pandas.read_csv(os.path.join(spheroid_path,spheroid_name))
-        intensity_file = pandas.read_csv(os.path.join(spheroid_path,intensity_name))
+            intensity_name = 'intensityFrame_' + position + '_' + date + '.csv'
 
-        prop_frame = single_spheroid_properties(spheroid_file,
-                               intensity_file,
-                               zRatio,
-                               dCells,
-                               Egg_grph,
-                               Egr_grph,
-                               Err_grph,
-                               Egg_dist,
-                               Egr_dist,
-                               Err_dist)
+            spheroid_file = pandas.read_csv(os.path.join(spheroid_path,spheroid_name))
+            intensity_file = pandas.read_csv(os.path.join(intensity_path,intensity_name))
 
-        prop_frame['time'] = int(date)
-        prop_frame['position'] = int(position)
+            prop_frame = single_spheroid_properties(spheroid_file,
+                                intensity_file,
+                                zRatio = zRatio,
+                                dCells = dCells,
+                                Egg_grph = Egg_grph,
+                                Egr_grph = Egr_grph,
+                                Err_grph = Err_grph,
+                                Egg_dist = Egg_dist,
+                                Egr_dist = Egr_dist,
+                                Err_dist = Err_dist)
 
-        resultFrame = resultFrame.append(prop_frame)
+            prop_frame['time'] = int(date)
+            prop_frame['position'] = int(position)
+
+            resultFrame = resultFrame.append(prop_frame)
+
+        except Exception as e: 
+            print(spheroid_name)
+            print(e)
     
     return resultFrame
 
@@ -68,13 +75,22 @@ def single_spheroid_properties(spheroid_file:pandas.DataFrame,
                                Egr_dist,
                                Err_dist):
 
-    result_frame = pandas.DataFrame()
+    """
+    
+    Analysis of individual position. Function centralizes other
+    analysis scripts developed.
+    
+    """
+
+    
     columns = ['graph type',
                'number of nodes', 
                'average node degree',
                'degree density',
                'E_graph',
                'E_distance']
+
+    result_frame = pandas.DataFrame(columns = columns)
 
     spheroid = processing_functions.single_spheroid_process(spheroid_file,
                                                             intensity_file,
@@ -99,10 +115,13 @@ def single_spheroid_properties(spheroid_file:pandas.DataFrame,
                                              Egg=Egg_grph, 
                                              Egr=Egr_grph, 
                                              Err=Err_grph)
-        energy_distance = analysis.Energy_cells_distance(g, 
-                                             Egg=Egg_dist, 
-                                             Egr=Egr_dist, 
-                                             Err=Err_dist)
+        #energy_distance = analysis.Energy_cells_distance(g,
+        #                                     dCells = dCells, 
+        #                                     Egg=Egg_dist, 
+        #                                     Egr=Egr_dist, 
+        #                                     Err=Err_dist)
+
+        energy_distance = 0
 
         data = [graph_types[i], 
                 len(g),
@@ -110,8 +129,9 @@ def single_spheroid_properties(spheroid_file:pandas.DataFrame,
                 density,
                 energy_graph,
                 energy_distance]
+        
+        loc_frame = pandas.DataFrame(data = [data], columns = columns)
 
-        result_frame = result_frame.append(pandas.DataFrame(data = data,
-                                                            columns = columns))
+        result_frame = result_frame.append(loc_frame)
                                                         
     return result_frame

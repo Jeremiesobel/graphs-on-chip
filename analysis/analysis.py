@@ -1,6 +1,6 @@
 import numpy as np
 import pandas
-import networkx
+import networkx as nx
 
 def density_and_mean_degree(G):
 
@@ -31,7 +31,7 @@ def Energy_cells(G, Egg=1, Egr=1.5, Err=1):
 
   return E
 
-def Energy_cells_distance(G, Egg=1, Egr=1.5, Err=1):
+def Energy_cells_distance(G, dCells,  Egg=1, Egr=1.5, Err=1):
   E=0
   colors = nx.get_node_attributes(G, 'color')
   neighbours = nx.get_node_attributes(G, 'neighbour')

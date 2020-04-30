@@ -4,7 +4,6 @@ import os
 import io
 import networkx as nx
 from scipy.spatial import Delaunay
-
 from collections import defaultdict
 
 
