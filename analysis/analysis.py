@@ -1,6 +1,7 @@
 import numpy as np
 import pandas
 import networkx
+import math
 
 def density_and_mean_degree(G):
 
@@ -109,6 +110,9 @@ def surface_of_facet(facet, nodes):
             return Surface_of_contact
 
 def get_volume_and_surfaces(G):
+    """
+    From a graph, adding to each edge the surface as an attribute
+    """
   npoints = G.number_of_nodes()
   pos = nx.get_node_attributes(G, 'pos')
 
@@ -124,7 +128,7 @@ def get_volume_and_surfaces(G):
   hull = ConvexHull(points)
   center = points.mean(axis=0)
   vol = hull.volume
-  dsph = (vol/4.19)**(1/3)
+  dsph = (3*vol/(4*pi))**(1/3)
   if len(regions) == len(G)+1:
     l = 0
     for ind in vor.point_region:
@@ -142,18 +146,17 @@ def get_volume_and_surfaces(G):
         """else:
           L[i] = (nodes[ind] - center)/distance.euclidean(nodes[ind], center)*dsph"""
 
-      #for i in range(len(regions[ind+1])):
 
-      #L = { (nodes[i][0], nodes[i][1], nodes[i][2]) for i in range(len(regions[ind+1]))}
-
-          #L = L.append(nodes[regions[ind+1][i]])
       if n !=0:
-
+        vol_cell = hull_cell.volume
+        surface_cell = hull_cell.area
+        RF = 36*pi*vol_cell**2/surface_cell**3
         G.add_node(l, pos_ridge_vertices = L)
         G.add_node(l, hull = hull)
         G.add_node(l, equations = hull.equations)
-        G.add_node(l, volume = hull.volume)
-        G.add_node(l, area = hull.area)
+        G.add_node(l, volume = vol_cell)
+        G.add_node(l, area = surface_cell)
+        G.add_node(l, Roundness_factor = RF)
       l = l+1
     ridge_vertices = nx.get_node_attributes(G,'ridge_vertices')
     pos_ridge_vertices = nx.get_node_attributes(G,'pos_ridge_vertices')
