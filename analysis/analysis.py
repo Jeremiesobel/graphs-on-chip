@@ -1,6 +1,6 @@
 import numpy as np
 import pandas
-import networkx as nx 
+import networkx as nx
 import math
 
 def density_and_mean_degree(G):
