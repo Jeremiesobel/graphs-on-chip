@@ -2,6 +2,8 @@ import numpy as np
 import pandas
 import os
 import glob
+
+
 import json
 
 def single_spheroid_process(spheroid_frame:pandas.DataFrame,
@@ -94,8 +96,6 @@ def batch_spheroid_process(spheroid_folder:str,
                                         color_description = intensity_description)
 
         spheroid = single_spheroid_process(spheroid_frame)
-
-    
 
     with open(os.path.join(save_folder, save_name + '.json', 'w')) as fp:
         json.dump(spheroid, fp, sort_keys=True, indent=4)
