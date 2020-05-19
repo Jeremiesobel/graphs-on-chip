@@ -189,4 +189,4 @@ def get_volume_and_surfaces2(G):
         else:
 
             G[edge[0]][edge[1]]['Area'] = surface_of_facet(common_facet, nodes, dsph)
-      return
+      return G
