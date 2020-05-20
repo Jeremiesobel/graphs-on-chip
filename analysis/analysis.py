@@ -59,6 +59,25 @@ def Energy_cells_distance(G, Egg=1, Egr=1.5, Err=1):
 
   return E
 
+ def Energy_cells_voronoi(G, Egg=1, Egr=1.5, Err=1):
+
+  E=0
+  colors = nx.get_node_attributes(G, 'color')
+  surfaces = = nx.get_edge_attributes(G, 'Area')
+
+  for edge in list(G.edges()):
+
+    if colors[edge[0]] == 'g' and colors[edge[1]]  == 'g':
+      E = E + Egg*surfaces[edge]
+
+    elif (colors[edge[0]]  == 'g' and colors[edge[1]]  == 'r') or (colors[edge[0]]  == 'r' and colors[edge[1]]  == 'g'):
+      E = E + Egr*surfaces[edge]
+
+    elif colors[edge[0]]  == 'r' and colors[edge[1]]  == 'r':
+      E = E + Err*surfaces[edge]
+
+  return E
+
 def mean_lengths(G):
     """
     From a networkx graph, return the average distance between cell core, depending on the color of each cells
@@ -194,7 +213,7 @@ def get_volume_and_surfaces2(G):
 def attribute_layer(G):
     """
     From a graph:
-    - construct the convex hull to determine the outter layer: layer = 0 as an attribute 
+    - construct the convex hull to determine the outter layer: layer = 0 as an attribute
     - construct the convex hull of the spheroid without the outter cells to determine the first inner layer: layer = 1
     - and so on until there is not enough cells to construct the convex hull
     - attribute the last layer to the remaining cells
