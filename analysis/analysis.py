@@ -190,3 +190,42 @@ def get_volume_and_surfaces2(G):
 
             G[edge[0]][edge[1]]['Area'] = surface_of_facet(common_facet, nodes, dsph)
       return G
+
+def attribute_layer(G):
+    """
+    From a graph:
+    - construct the convex hull to determine the outter layer: layer = 0 as an attribute 
+    - construct the convex hull of the spheroid without the outter cells to determine the first inner layer: layer = 1
+    - and so on until there is not enough cells to construct the convex hull
+    - attribute the last layer to the remaining cells
+    """
+  npoints = G.number_of_nodes()
+  pos = nx.get_node_attributes(G, 'pos')
+
+  points = np.zeros((npoints, 3))
+  layer = 0
+  for ind in range(npoints):
+    points[ind][0] = pos[ind][0]
+    points[ind][1] = pos[ind][1]
+    points[ind][2] = pos[ind][2]
+  pts = points.tolist()
+  vor = Voronoi(points)
+  hull = ConvexHull(points)
+  L = []
+  while len(points) > 3 :
+    hull = ConvexHull(points)
+    points = points.tolist()
+    k = len(points)
+    for l  in range(1, k+1):
+      if k-l in hull.vertices:
+        n = pts.index(points.pop(k-l))
+        G.add_node(n, layer = layer)
+        L.append(n)
+    layer = layer +1
+    points = np.asarray(points)
+  if len(G) - len(L) >0:
+    for l in range(len(G)):
+      if l not in L:
+        G.add_node(l, layer = layer)
+        L.append(l)
+  return G
