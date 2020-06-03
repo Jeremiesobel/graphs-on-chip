@@ -191,7 +191,7 @@ def get_volumes_and_surfaces(G):
           #L = np.zeros((n, 3))
           L = []
           for i in range(n):
-            if regions[ind][i] != -1 and distance.euclidean(nodes[regions[ind][i]], points[l])<5*mean_lengths(G):
+            if regions[ind][i] != -1 and distance.euclidean(nodes[regions[ind][i]], points[l])<3*mean_lengths(G):
               L.append( nodes[regions[ind][i]])
               """L[i][0] = nodes[regions[ind][i]][0]
               L[i][1] = nodes[regions[ind][i]][1]
@@ -258,4 +258,58 @@ def attribute_layer(G):
         L.append(l)
     layer = layer +1
   G.graph['nb_of_layer'] = layer +1
+  return G
+
+  def outer_points(G):
+      """
+      Modifies the Voronoi vertices of the cells that belong to the outer layer:
+      -neglect the points outside of the hull
+      -Make the symetric of the vertices inside the hull
+
+      """
+  npoints = G.number_of_nodes()
+  pos = nx.get_node_attributes(G, 'pos')
+  pos_ridge_vertices = nx.get_node_attributes(G, 'pos_ridge_vertices')
+  points = np.zeros((npoints, 3))
+
+  for ind in range(npoints):
+    points[ind][0] = pos[ind][0]
+    points[ind][1] = pos[ind][1]
+    points[ind][2] = pos[ind][2]
+  pts = points.tolist()
+  vor = Voronoi(points)
+  hull = ConvexHull(points)
+  center = points.mean(axis=0)
+  vol = hull.volume
+  dsph = (3*vol/(4*math.pi))**(1/3)  #the radius of the spheroid considering that it is a sphere
+
+  for ind in list(G.nodes):
+
+    if ind in hull.vertices:
+      l = 0
+      L = pos_ridge_vertices[ind]
+      A = []
+      for pos_ridge in L:
+
+        if distance.euclidean(pos_ridge, center) > distance.euclidean(points[ind], center):
+          L[l] = ((pos_ridge - center)/distance.euclidean(pos_ridge, center))*distance.euclidean(points[ind], center)
+
+        else:
+
+          A.append(points[ind]*2 - pos_ridge)
+
+        l = l+1
+      L = L.tolist()
+      L.extend(A)
+      L = np.asarray(L)
+      G.add_node(ind, pos_ridge_vertices = L)
+      hull_cell = ConvexHull(L)
+      vol_cell = hull_cell.volume
+      surface_cell = hull_cell.area
+      RF = 36*math.pi*vol_cell**2/surface_cell**3
+      G.add_node(ind, pos_ridge_vertices = L)
+      G.add_node(ind, hull = hull)
+      G.add_node(ind, volume = vol_cell)
+      G.add_node(ind, area = surface_cell)
+      G.add_node(ind, Roundness_factor = RF)
   return G
