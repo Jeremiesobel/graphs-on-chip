@@ -225,13 +225,6 @@ def get_volumes_and_surfaces(G):
       return
 
 def attribute_layer(G):
-    """
-    From a graph:
-    - construct the convex hull to determine the outter layer: layer = 0 as an attribute
-    - construct the convex hull of the spheroid without the outter cells to determine the first inner layer: layer = 1
-    - and so on until there is not enough cells to construct the convex hull
-    - attribute the last layer to the remaining cells
-    """
   npoints = G.number_of_nodes()
   pos = nx.get_node_attributes(G, 'pos')
 
@@ -247,6 +240,7 @@ def attribute_layer(G):
   L = []
   while len(points) > 3 :
     hull = ConvexHull(points)
+    Voronoi_3D_points(points, 60)
     points = points.tolist()
     k = len(points)
     for l  in range(1, k+1):
@@ -254,6 +248,7 @@ def attribute_layer(G):
         n = pts.index(points.pop(k-l))
         G.add_node(n, layer = layer)
         L.append(n)
+
     layer = layer +1
     points = np.asarray(points)
   if len(G) - len(L) >0:
@@ -261,4 +256,6 @@ def attribute_layer(G):
       if l not in L:
         G.add_node(l, layer = layer)
         L.append(l)
+    layer = layer +1
+  G.graph['nb_of_layer'] = layer +1
   return G
