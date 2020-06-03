@@ -19,7 +19,9 @@ From a networkx graph, return:
   return nb_edges/nb_edges_max, 2*nb_edges/nb_nodes
 
 def Energy_cells(G, Egg=1, Egr=1.5, Err=1):
-
+"""
+From a networkx graph, return an energy calculated from coefficients, and independantly from the surface of contact
+"""
   E=0
   colors = nx.get_node_attributes(G, 'color')
   neighbours = nx.get_node_attributes(G, 'neighbour')
@@ -39,7 +41,7 @@ def Energy_cells(G, Egg=1, Egr=1.5, Err=1):
 
 def Energy_cells_distance(G, Egg=1, Egr=1.5, Err=1):
     """
-    From a networkx graph, return an energy calculated from coefficients, and independantly from the surface of contact
+    From a networkx graph, return an energy calculated from coefficients, taking into account the distance between cells
     """
   E=0
   colors = nx.get_node_attributes(G, 'color')
@@ -59,22 +61,35 @@ def Energy_cells_distance(G, Egg=1, Egr=1.5, Err=1):
 
   return E
 
- def Energy_cells_voronoi(G, Egg=1, Egr=1.5, Err=1):
-
+ def Energy_cells_voronoi(G, Egg=1, Egr=1.5, Err=1, include_color:bool = False, V0 = (dCells/2)**3, S0 = (dCells/2)**2, Ka=1, Ks=1):
+"""
+From a networkx graph, return an energy calculated from coefficients, using the same Hamiltonian as Lisa Manning, and with cross terms taking into account the surface of contact between cells
+"""
   E=0
   colors = nx.get_node_attributes(G, 'color')
-  surfaces = = nx.get_edge_attributes(G, 'Area')
+  edge_surfaces  = nx.get_edge_attributes(G, 'Area')
+  cell_area  = nx.get_node_attributes(G, 'area')
+  cell_volume  = nx.get_node_attributes(G, 'volume')
+  for ind in list(G.nodes):
+    if ind in cell_area:
 
-  for edge in list(G.edges()):
+      E = E + Ks*(cell_area[ind] - S0) + Ka*(cell_volume[ind] - V0)
 
-    if colors[edge[0]] == 'g' and colors[edge[1]]  == 'g':
-      E = E + Egg*surfaces[edge]
+  if include_color:
 
-    elif (colors[edge[0]]  == 'g' and colors[edge[1]]  == 'r') or (colors[edge[0]]  == 'r' and colors[edge[1]]  == 'g'):
-      E = E + Egr*surfaces[edge]
+      assert If is not None
 
-    elif colors[edge[0]]  == 'r' and colors[edge[1]]  == 'r':
-      E = E + Err*surfaces[edge]
+      for edge in list(G.edges()):
+        if edge in edge_surfaces:
+
+          if colors[edge[0]] == 'g' and colors[edge[1]]  == 'g':
+            E = E + Egg*edge_surfaces[edge]
+
+          elif (colors[edge[0]]  == 'g' and colors[edge[1]]  == 'r') or (colors[edge[0]]  == 'r' and colors[edge[1]]  == 'g'):
+            E = E + Egr*edge_surfaces[edge]
+
+          elif colors[edge[0]]  == 'r' and colors[edge[1]]  == 'r':
+            E = E + Err*edge_surfaces[edge]
 
   return E
 
