@@ -240,7 +240,7 @@ def attribute_layer(G):
   L = []
   while len(points) > 3 :
     hull = ConvexHull(points)
-    Voronoi_3D_points(points, 60)
+    #Voronoi_3D_points(points, 60)
     points = points.tolist()
     k = len(points)
     for l  in range(1, k+1):
