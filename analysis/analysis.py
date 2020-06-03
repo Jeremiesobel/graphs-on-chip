@@ -126,12 +126,12 @@ def mean_lengths(G):
 
 
 
-def surface_of_facet(facet, nodes, dsph):
+def surface_of_facet(facet, nodes):
     """
     From the facet between two cells, calculate the surface
     facet: an array of the indexes of the vertexes composing the polygone between the two cells_ind
     nodes: an array of the positions of each vertex of the voronoi vertices
-    dsph: the radius of the spheroid considering that it is a sphere
+
     """
 
     m = len(facet)
@@ -151,7 +151,7 @@ def surface_of_facet(facet, nodes, dsph):
         Surface_of_contact = ConvexHull(facet_pos).area
     return Surface_of_contact
 
-def get_volume_and_surfaces2(G):
+def get_volumes_and_surfaces(G):
 
     """
     From a networkx graph,
@@ -175,39 +175,38 @@ def get_volume_and_surfaces2(G):
     vol = hull.volume
     dsph = (3*vol/(4*math.pi))**(1/3)  #the radius of the spheroid considering that it is a sphere
 
-    for i in range(len(nodes)):
+    """for i in range(len(nodes)):
         dst = distance.euclidean(nodes[i], center)
         if dst > dsph:
-            nodes[i] = (nodes[i] - center)/distance.euclidean(nodes[i], center)*dsph
+            nodes[i] = (nodes[i] - center)/distance.euclidean(nodes[i], center)*dsph"""
 
     if len(regions) == len(G)+1:
       l = 0
       for ind in vor.point_region:
         G.add_node(l, ridge_vertices = regions[ind])
         n = len(regions[ind])
-        L = np.zeros((n, 3))
+
         regions[ind] = np.asarray(regions[ind])
         if (np.any(regions[ind] < 0) and n > 4) or (np.all(regions[ind] > 0) and n>3):
+          #L = np.zeros((n, 3))
+          L = []
           for i in range(n):
-            if regions[ind][i] != -1:
-              L[i][0] = nodes[regions[ind][i]][0]
+            if regions[ind][i] != -1 and distance.euclidean(nodes[regions[ind][i]], points[l])<5*mean_lengths(G):
+              L.append( nodes[regions[ind][i]])
+              """L[i][0] = nodes[regions[ind][i]][0]
               L[i][1] = nodes[regions[ind][i]][1]
-              L[i][2] = nodes[regions[ind][i]][2]
-          hull_cell = ConvexHull(L)
-          """else:
-            L[i] = (nodes[ind] - center)/distance.euclidean(nodes[ind], center)*dsph"""
-
-
-
-          vol_cell = hull_cell.volume
-          surface_cell = hull_cell.area
-          RF = 36*math.pi*vol_cell**2/surface_cell**3
-          G.add_node(l, pos_ridge_vertices = L)
-          G.add_node(l, hull = hull)
-          G.add_node(l, equations = hull.equations)
-          G.add_node(l, volume = vol_cell)
-          G.add_node(l, area = surface_cell)
-          G.add_node(l, Roundness_factor = RF)
+              L[i][2] = nodes[regions[ind][i]][2]"""
+          L = np.asarray(L)
+          if len(L)>3:
+            hull_cell = ConvexHull(L)
+            vol_cell = hull_cell.volume
+            surface_cell = hull_cell.area
+            RF = 36*math.pi*vol_cell**2/surface_cell**3
+            G.add_node(l, pos_ridge_vertices = L)
+            G.add_node(l, hull_cell = hull_cell)
+            G.add_node(l, volume = vol_cell)
+            G.add_node(l, area = surface_cell)
+            G.add_node(l, Roundness_factor = RF)
         l = l+1
       ridge_vertices = nx.get_node_attributes(G,'ridge_vertices')
       pos_ridge_vertices = nx.get_node_attributes(G,'pos_ridge_vertices')
@@ -222,8 +221,8 @@ def get_volume_and_surfaces2(G):
             None
         else:
 
-            G[edge[0]][edge[1]]['Area'] = surface_of_facet(common_facet, nodes, dsph)
-      return G
+            G[edge[0]][edge[1]]['Area'] = surface_of_facet(common_facet, nodes)
+      return
 
 def attribute_layer(G):
     """
